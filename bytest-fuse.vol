@@ -1,0 +1,33 @@
+volume bytest-posix-0
+    type storage/posix
+    option directory /export/bytest1
+end-volume
+
+volume bytest-locks-0
+    type features/locks
+    subvolumes bytest-posix-0
+end-volume
+
+volume bytest-client-1
+    type protocol/client
+    option remote-host gfs1
+    option remote-subvolume /export/bytest2
+    option transport-type tcp
+end-volume
+
+volume bytest-replicate-0
+    type cluster/replicate
+    subvolumes bytest-locks-0 bytest-client-1
+end-volume
+
+volume bytest-bypass
+    type features/bypass
+    subvolumes bytest-replicate-0
+end-volume
+
+volume bytest
+    type debug/io-stats
+    option latency-measurement off
+    option count-fop-hits off
+    subvolumes bytest-bypass
+end-volume
