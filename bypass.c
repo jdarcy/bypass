@@ -20,12 +20,12 @@
 
 int32_t
 bypass_readv (call_frame_t *frame, xlator_t *this, fd_t *fd, size_t size,
-              off_t offset)
+              off_t offset, uint32_t flags)
 {
         bypass_private_t *priv = this->private;
 
         STACK_WIND (frame, default_readv_cbk, priv->target,
-                    priv->target->fops->readv, fd, size, offset);
+                    priv->target->fops->readv, fd, size, offset, flags);
         return 0;
 }
 
@@ -100,13 +100,13 @@ unwind:
 int32_t
 bypass_writev_resume (call_frame_t *frame, xlator_t *this, fd_t *fd,
                       struct iovec *vector, int32_t count, off_t off,
-                      struct iobref *iobref)
+                      uint32_t flags, struct iobref *iobref)
 {
         bypass_private_t *priv = this->private;
 
         STACK_WIND (frame, default_writev_cbk, priv->target,
                     priv->target->fops->writev, fd, vector, count, off,
-                    iobref);
+                    flags, iobref);
 
         return 0;
 }
@@ -114,7 +114,7 @@ bypass_writev_resume (call_frame_t *frame, xlator_t *this, fd_t *fd,
 int32_t
 bypass_writev (call_frame_t *frame, xlator_t *this, fd_t *fd,
                struct iovec *vector, int32_t count, off_t off,
-               struct iobref *iobref)
+               uint32_t flags, struct iobref *iobref)
 {
 	dict_t           *dict = NULL;
 	call_stub_t      *stub = NULL;
@@ -126,7 +126,7 @@ bypass_writev (call_frame_t *frame, xlator_t *this, fd_t *fd,
          * with "this" pointing to us.
          */
 	stub = fop_writev_stub(frame, bypass_writev_resume,
-			       fd, vector, count, off, iobref);
+			       fd, vector, count, off, flags, iobref);
 	if (!stub) {
 		gf_log (this->name, GF_LOG_WARNING, "failed to allocate stub");
 		goto wind;
@@ -149,7 +149,7 @@ wind:
 	dict_unref(dict);
         STACK_WIND (frame, default_writev_cbk, FIRST_CHILD(this),
                     FIRST_CHILD(this)->fops->writev, fd, vector, count, off,
-                    iobref);
+                    flags, iobref);
         return 0;
 }
 
