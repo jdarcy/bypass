@@ -63,7 +63,7 @@ get_pending_dict (xlator_t *this)
 			goto free_key;
 		}
                 /* Amazingly, there's no constant for this. */
-                value[0] = htons(1);
+                value[0] = htonl(1);
 		if (dict_set_dynptr(dict,key,value,3*sizeof(*value)) < 0) {
 			gf_log (this->name, GF_LOG_WARNING,
 				"failed to set up dict");
